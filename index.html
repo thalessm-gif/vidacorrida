@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Inscrição Corrida</title>
+</head>
+<body>
+
+<h2>Inscrição</h2>
+
+<form id="form">
+  Nome: <input type="text" id="nome"><br><br>
+
+  Distância:
+  <select id="distancia">
+    <option>3km</option>
+    <option>5km</option>
+    <option>25km</option>
+    <option>50km</option>
+  </select><br><br>
+
+  Camisa:
+  <select id="camisa">
+    <option>PP</option>
+    <option>P</option>
+    <option>M</option>
+    <option>G</option>
+    <option>GG</option>
+  </select><br><br>
+
+  <button type="button" onclick="salvar()">Enviar</button>
+</form>
+
+<h3>Inscritos</h3>
+<ul id="lista"></ul>
+
+<script>
+let inscritos = [];
+
+function salvar() {
+  let nome = document.getElementById("nome").value;
+  let distancia = document.getElementById("distancia").value;
+  let camisa = document.getElementById("camisa").value;
+
+  inscritos.push({ nome, distancia, camisa });
+
+  inscritos.sort((a, b) => a.nome.localeCompare(b.nome));
+
+  atualizarLista();
+}
+
+function atualizarLista() {
+  let lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  inscritos.forEach(i => {
+    lista.innerHTML += `<li>${i.nome} - ${i.distancia} - ${i.camisa}</li>`;
+  });
+}
+</script>
+
+</body>
+</html>
