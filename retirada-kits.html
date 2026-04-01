@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retirada de Kits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <div id="status-box" class="status-box status-box-hidden" role="status" aria-live="polite" aria-atomic="true">
+      <div class="status-box-panel">
+        <span id="status-spinner" class="status-spinner" aria-hidden="true"></span>
+        <div class="status-box-copy">
+          <p id="status-box-title" class="status-box-title">Carregando informacoes...</p>
+          <p id="status-box-text" class="status-box-text">Aguarde enquanto buscamos os dados atualizados.</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a href="index.html" class="nav-link">Pagina inicial</a>
+      <a href="destaques-semanais.html" class="nav-link">Destaques Semanais</a>
+      <a href="ranking-circuito-riograndino.html" class="nav-link">Ranking Circuito</a>
+    </nav>
+
+    <section class="brand-banner">
+      <div class="brand-pill">
+        <img src="assets/logo-vida-corrida.jpeg" alt="Logo Vida Corrida" class="brand-logo">
+        <div>
+          <p class="brand-name">VIDA CORRIDA</p>
+          <p class="brand-subtitle">"Os desafios nos definem."</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Retirada de Kits</p>
+        <h1>2a Meia Maratona do Choque</h1>
+        <p class="hero-text">
+          Retirada de kits: Dia do evento, na tenda da VC (local da prova).
+        </p>
+        <div class="hero-highlight">
+          <span class="highlight-label">DICA</span>
+          <p>
+            Celebre sua conquista ao final.
+          </p>
+        </div>
+      </div>
+
+      <div class="panel form-panel">
+        <h2>CADASTRO</h2>
+
+        <form id="kit-form" novalidate>
+          <label class="field">
+            <span>Nome Completo</span>
+            <input id="fullName" name="fullName" type="text" placeholder="Digite o seu nome" required>
+          </label>
+
+          <label class="field">
+            <span>Distancia</span>
+            <select id="distance" name="distance" required>
+              <option value="">Selecione</option>
+              <option value="3km">3km</option>
+              <option value="5km">5km</option>
+              <option value="10km">10km</option>
+              <option value="21km">21km</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Tamanho da Camisa</span>
+            <select id="shirtSize" name="shirtSize" required>
+              <option value="">Selecione</option>
+              <option value="PP">PP</option>
+              <option value="P">P</option>
+              <option value="M">M</option>
+              <option value="G">G</option>
+              <option value="GG">GG</option>
+            </select>
+          </label>
+
+          <div class="actions">
+            <button type="submit" class="primary-button">Enviar</button>
+            <button type="button" id="export-button" class="secondary-button">Exportar CSV</button>
+          </div>
+
+          <p id="form-message" class="form-message" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel overview">
+      <div class="overview-header">
+        <div>
+          <p class="eyebrow">Lista atual</p>
+          <h2>Atletas cadastrados</h2>
+        </div>
+        <span id="total-count" class="count-badge">0 inscritos</span>
+      </div>
+
+      <div id="distance-groups" class="distance-groups" aria-live="polite"></div>
+      <div id="shirt-summary" class="shirt-summary" aria-live="polite"></div>
+    </section>
+
+    <section class="panel table-panel">
+      <div class="overview-header">
+        <div>
+          <p class="eyebrow">VIDA CORRIDA</p>
+          <h2>ATLETAS CONFIRMADOS</h2>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Distancia</th>
+              <th>Camisa</th>
+            </tr>
+          </thead>
+          <tbody id="entries-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

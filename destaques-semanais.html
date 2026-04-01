@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Destaques Semanais</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a href="index.html" class="nav-link">Pagina inicial</a>
+      <a href="retirada-kits.html" class="nav-link">Retirada de Kits</a>
+      <a href="ranking-circuito-riograndino.html" class="nav-link">Ranking Circuito</a>
+    </nav>
+
+    <section class="brand-banner">
+      <div class="brand-pill">
+        <img src="assets/logo-vida-corrida.jpeg" alt="Logo Vida Corrida" class="brand-logo">
+        <div>
+          <p class="brand-name">VIDA CORRIDA</p>
+          <p class="brand-subtitle">"Os desafios nos definem."</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel highlights-hero">
+      <p class="eyebrow">Atualizacao semanal</p>
+      <h1>Destaques Semanais</h1>
+      <p class="hero-text">
+        Acompanhe os atletas que foram destaque nas semanas de 2026.
+      </p>
+    </section>
+
+    <section class="highlights-stat-grid">
+      <article class="panel stat-card">
+        <p class="stat-label">Atletas mapeados</p>
+        <p id="athletes-count" class="stat-value">0</p>
+        <p class="stat-support">Quantidade total de atletas.</p>
+      </article>
+
+      <article class="panel stat-card">
+        <p class="stat-label">Semanas analisadas</p>
+        <p id="weeks-count" class="stat-value">0</p>
+        <p class="stat-support">Numero total de semanas.</p>
+      </article>
+
+      <article class="panel stat-card">
+        <p class="stat-label">100% ativos</p>
+        <p id="perfect-count" class="stat-value">0</p>
+        <p class="stat-support">Atletas que nao falharam nenhuma semana.</p>
+      </article>
+    </section>
+
+    <section class="panel highlight-card perfect-panel">
+      <div class="overview-header">
+        <div>
+          <p class="eyebrow">Destaques reais</p>
+          <h2>Atletas 100% ativos</h2>
+        </div>
+        <span id="sheet-status" class="count-badge">Aguardando informacoes</span>
+      </div>
+
+      <div id="perfect-list" class="perfect-list">
+        <p class="empty-state">
+          Assim que voce conectar a planilha, esta area vai mostrar quem esteve em destaque em todas as semanas.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel table-panel highlights-table-panel">
+      <div class="overview-header">
+        <div>
+          <p class="eyebrow">Ranking geral</p>
+          <h2>Historico de destaques</h2>
+        </div>
+      </div>
+
+      <label class="field search-field">
+        <span>Buscar atleta</span>
+        <input id="highlights-search" type="text" placeholder="Digite um nome para filtrar">
+      </label>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Semanas</th>
+              <th>Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="highlights-table-body">
+            <tr>
+              <td colspan="4">Conecte a planilha para visualizar os dados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="highlights.js"></script>
+</body>
+</html>

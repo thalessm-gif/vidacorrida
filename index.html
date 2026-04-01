@@ -1,62 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <title>Inscrição Corrida</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vida Corrida Assessoria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <main class="page home-page">
+    <section class="brand-banner">
+      <div class="brand-pill">
+        <img src="assets/logo-vida-corrida.jpeg" alt="Logo Vida Corrida" class="brand-logo">
+        <div>
+          <p class="brand-name">VIDA CORRIDA</p>
+          <p class="brand-subtitle">"Os desafios nos definem."</p>
+        </div>
+      </div>
+    </section>
 
-<h2>Inscrição</h2>
+    <section class="panel home-hero">
+      <p class="eyebrow">Painel principal</p>
+      <h1>Escolha a area que voce deseja acessar</h1>
+      <p class="hero-text">
+        Tudo que voce precisa da assessoria, de forma rapida e organizada, incluindo retirada de kits, destaques e ranking do circuito.
+      </p>
 
-<form id="form">
-  Nome: <input type="text" id="nome"><br><br>
+      <div class="home-actions">
+        <a href="retirada-kits.html" class="feature-card feature-card-primary">
+          <span class="feature-tag">Area 1</span>
+          <h2>Retirada de Kits</h2>
+          <p>Vai participar de uma prova? Confira aqui as informacoes para retirada do seu kit.</p>
+          <span class="feature-link">Ver retirada de kits</span>
+        </a>
 
-  Distância:
-  <select id="distancia">
-    <option>3km</option>
-    <option>5km</option>
-    <option>25km</option>
-    <option>50km</option>
-  </select><br><br>
+        <a href="destaques-semanais.html" class="feature-card">
+          <span class="feature-tag">Area 2</span>
+          <h2>Destaques Semanais</h2>
+          <p>Confira os principais destaques da assessoria.</p>
+          <span class="feature-link">Acompanhar destaques</span>
+        </a>
 
-  Camisa:
-  <select id="camisa">
-    <option>PP</option>
-    <option>P</option>
-    <option>M</option>
-    <option>G</option>
-    <option>GG</option>
-  </select><br><br>
-
-  <button type="button" onclick="salvar()">Enviar</button>
-</form>
-
-<h3>Inscritos</h3>
-<ul id="lista"></ul>
-
-<script>
-let inscritos = [];
-
-function salvar() {
-  let nome = document.getElementById("nome").value;
-  let distancia = document.getElementById("distancia").value;
-  let camisa = document.getElementById("camisa").value;
-
-  inscritos.push({ nome, distancia, camisa });
-
-  inscritos.sort((a, b) => a.nome.localeCompare(b.nome));
-
-  atualizarLista();
-}
-
-function atualizarLista() {
-  let lista = document.getElementById("lista");
-  lista.innerHTML = "";
-
-  inscritos.forEach(i => {
-    lista.innerHTML += `<li>${i.nome} - ${i.distancia} - ${i.camisa}</li>`;
-  });
-}
-</script>
-
+        <a href="ranking-circuito-riograndino.html" class="feature-card">
+          <span class="feature-tag">Area 3</span>
+          <h2>Ranking Circuito Riograndino VC</h2>
+          <p>Consulte a classificacao geral e por categoria com base na planilha oficial do circuito.</p>
+          <span class="feature-link">Abrir ranking</span>
+        </a>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
