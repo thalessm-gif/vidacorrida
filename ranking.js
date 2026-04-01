@@ -2,19 +2,11 @@
 const RANKING_SHEET_URL = "https://docs.google.com/spreadsheets/d/10t1-ovZJxhwIPCW64IsOSpN1PPtDe9UZouuERrxUNEY/edit?usp=sharing";
 const RANKING_SHEET_NAME = "";
 
-const athletesCountElement = document.getElementById("ranking-athletes-count");
-const stagesCountElement = document.getElementById("ranking-stages-count");
-const categoriesCountElement = document.getElementById("ranking-categories-count");
 const sheetStatusElement = document.getElementById("ranking-sheet-status");
 const searchInputElement = document.getElementById("ranking-search");
 const tableBodyElement = document.getElementById("ranking-table-body");
 const cardListElement = document.getElementById("ranking-card-list");
 const tableHeadingElement = document.getElementById("ranking-table-heading");
-const chipRowElement = document.getElementById("ranking-chip-row");
-const currentLeaderNameElement = document.getElementById("ranking-general-leader-name");
-const currentLeaderSupportElement = document.getElementById("ranking-general-leader-support");
-const alternateLeaderNameElement = document.getElementById("ranking-category-leader-name");
-const alternateLeaderSupportElement = document.getElementById("ranking-category-leader-support");
 const categoryButtonsContainer = document.getElementById("ranking-category-buttons");
 const viewButtons = [...document.querySelectorAll("[data-view]")];
 const genderButtons = [...document.querySelectorAll("[data-gender]")];
@@ -67,9 +59,7 @@ function initializeRankingPage() {
 async function loadRankingFromSheet() {
   if (!RANKING_SHEET_URL) {
     setSheetStatus("Cole o link da planilha");
-    renderSummary(rankingData.stats);
     renderEmptyState("Conecte a planilha em ranking.js para visualizar o ranking do circuito.");
-    renderLeaderCards([], []);
     return;
   }
 
@@ -85,18 +75,15 @@ async function loadRankingFromSheet() {
     const csvContent = await response.text();
     rankingData = parseRankingCsv(csvContent);
     renderCategoryButtons(rankingData.categories);
-    renderSummary(rankingData.stats);
     renderRanking();
     setSheetStatus("Planilha conectada");
   } catch (error) {
     console.error("Erro ao carregar ranking do circuito:", error);
     rankingData = createEmptyRankingData();
     renderCategoryButtons([]);
-    renderSummary(rankingData.stats);
     renderEmptyState(
       "Nao foi possivel carregar a planilha. Verifique o link em ranking.js e confirme se a base esta acessivel."
     );
-    renderLeaderCards([], []);
     setSheetStatus("Erro ao carregar");
   }
 }
@@ -148,14 +135,9 @@ function parseRankingCsv(csvContent) {
   );
 
   return {
-    generalEntries: buildGeneralRanking(rawRows),
-    categoryEntries: buildCategoryRanking(rawRows),
-    categories,
-    stats: {
-      athleteCount: new Set(rawRows.map((entry) => entry.athlete.toLowerCase())).size,
-      stageCount: new Set(rawRows.map((entry) => entry.stageKey).filter(Boolean)).size,
-      categoryCount: categories.length
-    }
+    generalEntries: buildRanking(rawRows, "general"),
+    categoryEntries: buildRanking(rawRows, "category"),
+    categories
   };
 }
 
@@ -176,17 +158,19 @@ function createRankingRow({
   const sex = getCellValue(row, sexColumn ? sexColumn.index : -1);
   const stageName = getCellValue(row, stageColumn ? stageColumn.index : -1);
   const date = getCellValue(row, dateColumn ? dateColumn.index : -1);
+  const stageKey = [stageName, date].filter(Boolean).join(" - ") || stageName || date;
+  const stageLabel = `Etapa ${getCellValue(row, stageColumn ? stageColumn.index : -1) || "?"}`;
   const generalPoints = parsePositiveNumber(getCellValue(row, generalPointsColumn ? generalPointsColumn.index : -1));
   const categoryPoints = parsePositiveNumber(getCellValue(row, categoryPointsColumn ? categoryPointsColumn.index : -1));
   const validPoints = parsePositiveNumber(getCellValue(row, validPointsColumn ? validPointsColumn.index : -1));
   const validType = normalizeRankType(getCellValue(row, validTypeColumn ? validTypeColumn.index : -1));
-  const stageKey = [stageName, date].filter(Boolean).join(" - ") || stageName || date;
 
   return {
     athlete,
     category,
     sex,
     stageKey,
+    stageLabel,
     ...resolvePointContributions({
       generalPoints,
       categoryPoints,
@@ -217,67 +201,37 @@ function resolvePointContributions({ generalPoints, categoryPoints, validPoints,
   };
 }
 
-function buildGeneralRanking(rows) {
+function buildRanking(rows, mode) {
   const rankingMap = new Map();
 
   rows.forEach((entry) => {
-    const key = entry.athlete.toLowerCase();
-    if (!rankingMap.has(key)) {
-      rankingMap.set(key, {
-        athlete: entry.athlete,
-        category: entry.category,
-        sex: entry.sex,
-        totalPoints: 0,
-        stageKeys: new Set()
-      });
-    }
-
-    const athleteEntry = rankingMap.get(key);
-    athleteEntry.category = athleteEntry.category || entry.category;
-    athleteEntry.sex = athleteEntry.sex || entry.sex;
-    athleteEntry.totalPoints += entry.generalPoints;
-
-    if (entry.generalPoints > 0 && entry.stageKey) {
-      athleteEntry.stageKeys.add(entry.stageKey);
-    }
-  });
-
-  return [...rankingMap.values()]
-    .map((entry) => ({
-      athlete: entry.athlete,
-      category: entry.category,
-      sex: entry.sex,
-      totalPoints: entry.totalPoints,
-      scoredStages: entry.stageKeys.size
-    }))
-    .filter((entry) => entry.totalPoints > 0)
-    .sort(sortRankingEntries);
-}
-
-function buildCategoryRanking(rows) {
-  const rankingMap = new Map();
-
-  rows.forEach((entry) => {
-    if (!entry.category) {
+    if (mode === "category" && !entry.category) {
       return;
     }
 
-    const key = `${entry.athlete.toLowerCase()}|${entry.category.toLowerCase()}`;
+    const key = mode === "category"
+      ? `${entry.athlete.toLowerCase()}|${entry.category.toLowerCase()}`
+      : entry.athlete.toLowerCase();
+
     if (!rankingMap.has(key)) {
       rankingMap.set(key, {
         athlete: entry.athlete,
         category: entry.category,
         sex: entry.sex,
         totalPoints: 0,
-        stageKeys: new Set()
+        stagePoints: new Map()
       });
     }
 
     const athleteEntry = rankingMap.get(key);
-    athleteEntry.totalPoints += entry.categoryPoints;
+    const points = mode === "general" ? entry.generalPoints : entry.categoryPoints;
 
-    if (entry.categoryPoints > 0 && entry.stageKey) {
-      athleteEntry.stageKeys.add(entry.stageKey);
+    athleteEntry.category = athleteEntry.category || entry.category;
+    athleteEntry.sex = athleteEntry.sex || entry.sex;
+    athleteEntry.totalPoints += points;
+
+    if (points > 0 && entry.stageLabel) {
+      athleteEntry.stagePoints.set(entry.stageLabel, points);
     }
   });
 
@@ -286,31 +240,29 @@ function buildCategoryRanking(rows) {
       athlete: entry.athlete,
       category: entry.category,
       sex: entry.sex,
-      totalPoints: entry.totalPoints,
-      scoredStages: entry.stageKeys.size
+      stage1: entry.stagePoints.get("Etapa 1") || 0,
+      stage2: entry.stagePoints.get("Etapa 2") || 0,
+      totalPoints: entry.totalPoints
     }))
     .filter((entry) => entry.totalPoints > 0)
     .sort(sortRankingEntries);
 }
 
 function renderRanking() {
-  const filteredGeneralEntries = filterEntries(rankingData.generalEntries);
-  const filteredCategoryEntries = filterEntries(rankingData.categoryEntries);
-  const currentEntries = selectedView === "general" ? filteredGeneralEntries : filteredCategoryEntries;
-  const alternateEntries = selectedView === "general" ? filteredCategoryEntries : filteredGeneralEntries;
+  const currentEntries = filterEntries(
+    selectedView === "general" ? rankingData.generalEntries : rankingData.categoryEntries
+  );
 
-  renderLeaderCards(currentEntries, alternateEntries);
   renderTable(currentEntries);
   renderCards(currentEntries);
   renderTableHeading();
-  renderActiveChips(currentEntries.length);
 }
 
 function renderTable(entries) {
   if (!entries.length) {
     tableBodyElement.innerHTML = `
       <tr>
-        <td colspan="6">Nenhum atleta encontrado para o filtro atual.</td>
+        <td colspan="7">Nenhum atleta encontrado para o filtro atual.</td>
       </tr>
     `;
     return;
@@ -323,7 +275,8 @@ function renderTable(entries) {
         <td>${escapeHtml(entry.athlete)}</td>
         <td>${escapeHtml(formatGenderLabel(entry.sex))}</td>
         <td>${escapeHtml(entry.category || "-")}</td>
-        <td>${entry.scoredStages}</td>
+        <td>${entry.stage1 || "-"}</td>
+        <td>${entry.stage2 || "-"}</td>
         <td class="ranking-points">${formatPoints(entry.totalPoints)}</td>
       </tr>
     `)
@@ -355,8 +308,8 @@ function renderCards(entries) {
           </div>
         </div>
         <div class="ranking-athlete-card-bottom">
-          <span class="ranking-chip">${entry.scoredStages} etapa${entry.scoredStages === 1 ? "" : "s"}</span>
-          <span class="ranking-chip ranking-chip-strong">${selectedView === "general" ? "Geral" : "Categoria"}</span>
+          <span class="ranking-chip">Etapa 1: ${entry.stage1 || "-"}</span>
+          <span class="ranking-chip">Etapa 2: ${entry.stage2 || "-"}</span>
         </div>
       </article>
     `)
@@ -366,7 +319,7 @@ function renderCards(entries) {
 function renderEmptyState(message) {
   tableBodyElement.innerHTML = `
     <tr>
-      <td colspan="6">${escapeHtml(message)}</td>
+      <td colspan="7">${escapeHtml(message)}</td>
     </tr>
   `;
 
@@ -375,27 +328,6 @@ function renderEmptyState(message) {
       <p class="ranking-card-empty">${escapeHtml(message)}</p>
     </article>
   `;
-}
-
-function renderLeaderCards(currentEntries, alternateEntries) {
-  const currentLeader = currentEntries[0];
-  const alternateLeader = alternateEntries[0];
-
-  currentLeaderNameElement.textContent = currentLeader ? currentLeader.athlete : "Sem dados";
-  currentLeaderSupportElement.textContent = currentLeader
-    ? `${currentLeader.totalPoints} pontos em ${currentLeader.scoredStages} etapa${currentLeader.scoredStages === 1 ? "" : "s"} na visao atual.`
-    : "Assim que a planilha for carregada, esta area mostra quem lidera o ranking atual.";
-
-  alternateLeaderNameElement.textContent = alternateLeader ? alternateLeader.athlete : "Sem dados";
-  alternateLeaderSupportElement.textContent = alternateLeader
-    ? `${alternateLeader.totalPoints} pontos na visao ${selectedView === "general" ? "categoria" : "geral"}.`
-    : "Aqui aparece o melhor nome da outra visao para facilitar a comparacao.";
-}
-
-function renderSummary({ athleteCount, stageCount, categoryCount }) {
-  athletesCountElement.textContent = String(athleteCount);
-  stagesCountElement.textContent = String(stageCount);
-  categoriesCountElement.textContent = String(categoryCount);
 }
 
 function renderCategoryButtons(categories) {
@@ -417,20 +349,6 @@ function renderCategoryButtons(categories) {
 
 function renderTableHeading() {
   tableHeadingElement.textContent = selectedView === "general" ? "Ranking Geral" : "Ranking por Categoria";
-}
-
-function renderActiveChips(entryCount) {
-  const currentViewLabel = selectedView === "general" ? "Ranking Geral" : "Ranking Categoria";
-  const currentGenderLabel = selectedGender === "all" ? "Todos os generos" : formatGenderLabel(selectedGender);
-  const currentCategoryLabel = selectedCategory === "all" ? "Todas as categorias" : selectedCategory;
-
-  chipRowElement.innerHTML = `
-    <span class="ranking-chip ranking-chip-strong">Fonte: planilha do ranking</span>
-    <span class="ranking-chip">${escapeHtml(currentViewLabel)}</span>
-    <span class="ranking-chip">${escapeHtml(currentGenderLabel)}</span>
-    <span class="ranking-chip">${escapeHtml(currentCategoryLabel)}</span>
-    <span class="ranking-chip">${entryCount} atleta${entryCount === 1 ? "" : "s"}</span>
-  `;
 }
 
 function updateToggleButtons(buttons, selectedValue, attributeName) {
@@ -481,10 +399,6 @@ function setSheetStatus(text) {
 function sortRankingEntries(first, second) {
   if (second.totalPoints !== first.totalPoints) {
     return second.totalPoints - first.totalPoints;
-  }
-
-  if (second.scoredStages !== first.scoredStages) {
-    return second.scoredStages - first.scoredStages;
   }
 
   return first.athlete.localeCompare(second.athlete, "pt-BR", { sensitivity: "base" });
@@ -563,12 +477,7 @@ function createEmptyRankingData() {
   return {
     generalEntries: [],
     categoryEntries: [],
-    categories: [],
-    stats: {
-      athleteCount: 0,
-      stageCount: 0,
-      categoryCount: 0
-    }
+    categories: []
   };
 }
 

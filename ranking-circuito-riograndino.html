@@ -33,30 +33,6 @@
       <p class="hero-text">
         Consulte o ranking geral e por categoria com uma leitura rapida, limpa e adaptada para celular.
       </p>
-      <div class="ranking-note">
-        <span class="highlight-label">REGRA DO CIRCUITO</span>
-        <p>Quando o atleta pontua no geral, essa pontuacao nao entra no ranking da categoria.</p>
-      </div>
-    </section>
-
-    <section class="highlights-stat-grid">
-      <article class="panel stat-card">
-        <p class="stat-label">Atletas mapeados</p>
-        <p id="ranking-athletes-count" class="stat-value">0</p>
-        <p class="stat-support">Quantidade unica de atletas lida da planilha do ranking.</p>
-      </article>
-
-      <article class="panel stat-card">
-        <p class="stat-label">Etapas encontradas</p>
-        <p id="ranking-stages-count" class="stat-value">0</p>
-        <p class="stat-support">Numero de etapas ou provas presentes na base.</p>
-      </article>
-
-      <article class="panel stat-card">
-        <p class="stat-label">Categorias ativas</p>
-        <p id="ranking-categories-count" class="stat-value">0</p>
-        <p class="stat-support">Faixas etarias encontradas no circuito.</p>
-      </article>
     </section>
 
     <section class="panel ranking-controls-panel">
@@ -100,44 +76,12 @@
       </div>
     </section>
 
-    <section class="panel ranking-leaders-panel">
-      <div class="overview-header">
-        <div>
-          <p class="eyebrow">Destaques</p>
-          <h2>Liderancas atuais</h2>
-        </div>
-      </div>
-
-      <div class="ranking-podium-grid">
-        <article class="panel ranking-podium-card ranking-podium-card-primary">
-          <p class="ranking-podium-label">Lider do filtro atual</p>
-          <p id="ranking-general-leader-name" class="ranking-podium-name">Aguardando dados</p>
-          <p id="ranking-general-leader-support" class="ranking-podium-support">
-            Assim que a planilha for carregada, esta area mostra quem lidera o ranking atual.
-          </p>
-        </article>
-
-        <article class="panel ranking-podium-card">
-          <p class="ranking-podium-label">Melhor nome da outra visao</p>
-          <p id="ranking-category-leader-name" class="ranking-podium-name">Aguardando dados</p>
-          <p id="ranking-category-leader-support" class="ranking-podium-support">
-            Aqui aparece o melhor nome da outra visao para facilitar a comparacao.
-          </p>
-        </article>
-      </div>
-    </section>
-
     <section class="panel table-panel">
       <div class="overview-header">
         <div>
           <p class="eyebrow">Tabela oficial</p>
           <h2 id="ranking-table-heading">Ranking Geral</h2>
         </div>
-      </div>
-
-      <div id="ranking-chip-row" class="ranking-chip-row">
-        <span class="ranking-chip ranking-chip-strong">Fonte: planilha do ranking</span>
-        <span class="ranking-chip">Filtro atual: ranking geral</span>
       </div>
 
       <div class="table-wrapper ranking-table-wrapper">
@@ -148,13 +92,14 @@
               <th>Nome</th>
               <th>Genero</th>
               <th>Categoria</th>
-              <th>Etapas</th>
+              <th>Etapa 1</th>
+              <th>Etapa 2</th>
               <th>Total</th>
             </tr>
           </thead>
           <tbody id="ranking-table-body">
             <tr>
-              <td colspan="6">Conecte a planilha para visualizar o ranking.</td>
+              <td colspan="7">Conecte a planilha para visualizar o ranking.</td>
             </tr>
           </tbody>
         </table>
