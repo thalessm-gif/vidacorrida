@@ -539,17 +539,43 @@ button:disabled {
   margin-bottom: 24px;
 }
 
-.ranking-controls-grid {
+.ranking-filters-stack {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
   gap: 18px;
-  align-items: end;
+}
+
+.ranking-filter-block {
+  display: grid;
+  gap: 10px;
+}
+
+.ranking-filter-label {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .ranking-view-toggle {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.ranking-search-field {
+  margin-bottom: 0;
+}
+
+.ranking-category-chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ranking-category-button {
+  padding-inline: 14px;
 }
 
 .toggle-button {
@@ -574,17 +600,22 @@ button:disabled {
   color: #fff3eb;
 }
 
-.ranking-leaders-grid {
+.ranking-podium-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
 }
 
-.ranking-leader-card {
-  padding: 22px;
+.ranking-podium-card {
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
 }
 
-.ranking-leader-label {
+.ranking-podium-card-primary {
+  background: linear-gradient(135deg, rgba(255, 106, 0, 0.18), rgba(255, 255, 255, 0.05));
+}
+
+.ranking-podium-label {
   margin-bottom: 10px;
   color: var(--muted);
   font-size: 0.92rem;
@@ -593,13 +624,14 @@ button:disabled {
   text-transform: uppercase;
 }
 
-.ranking-leader-name {
-  margin-bottom: 8px;
-  font-size: 1.5rem;
+.ranking-podium-name {
+  margin-bottom: 10px;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
   font-weight: 700;
+  line-height: 1.05;
 }
 
-.ranking-leader-support {
+.ranking-podium-support {
   margin-bottom: 0;
   color: var(--muted);
   line-height: 1.6;
@@ -648,6 +680,68 @@ button:disabled {
   margin-top: 4px;
   color: var(--muted);
   font-size: 0.88rem;
+}
+
+.ranking-card-list {
+  display: none;
+  gap: 14px;
+}
+
+.ranking-athlete-card {
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+}
+
+.ranking-athlete-card-top {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.ranking-athlete-main {
+  min-width: 0;
+}
+
+.ranking-athlete-name {
+  margin-bottom: 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.ranking-athlete-meta {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.ranking-athlete-total {
+  text-align: right;
+}
+
+.ranking-athlete-total-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ranking-athlete-card-bottom {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.ranking-card-empty {
+  margin: 0;
+  color: var(--muted);
 }
 
 .highlights-stat-grid {
@@ -793,8 +887,7 @@ tbody tr:hover {
   .distance-groups,
   .home-actions,
   .highlights-stat-grid,
-  .ranking-controls-grid,
-  .ranking-leaders-grid {
+  .ranking-podium-grid {
     grid-template-columns: 1fr;
   }
 
@@ -823,6 +916,14 @@ tbody tr:hover {
   .actions {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .ranking-table-wrapper {
+    display: none;
+  }
+
+  .ranking-card-list {
+    display: grid;
   }
 
   .primary-button,

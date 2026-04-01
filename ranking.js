@@ -7,17 +7,21 @@ const stagesCountElement = document.getElementById("ranking-stages-count");
 const categoriesCountElement = document.getElementById("ranking-categories-count");
 const sheetStatusElement = document.getElementById("ranking-sheet-status");
 const searchInputElement = document.getElementById("ranking-search");
-const categoryFilterElement = document.getElementById("ranking-category-filter");
 const tableBodyElement = document.getElementById("ranking-table-body");
+const cardListElement = document.getElementById("ranking-card-list");
 const tableHeadingElement = document.getElementById("ranking-table-heading");
 const chipRowElement = document.getElementById("ranking-chip-row");
-const generalLeaderNameElement = document.getElementById("ranking-general-leader-name");
-const generalLeaderSupportElement = document.getElementById("ranking-general-leader-support");
-const categoryLeaderNameElement = document.getElementById("ranking-category-leader-name");
-const categoryLeaderSupportElement = document.getElementById("ranking-category-leader-support");
+const currentLeaderNameElement = document.getElementById("ranking-general-leader-name");
+const currentLeaderSupportElement = document.getElementById("ranking-general-leader-support");
+const alternateLeaderNameElement = document.getElementById("ranking-category-leader-name");
+const alternateLeaderSupportElement = document.getElementById("ranking-category-leader-support");
+const categoryButtonsContainer = document.getElementById("ranking-category-buttons");
 const viewButtons = [...document.querySelectorAll("[data-view]")];
+const genderButtons = [...document.querySelectorAll("[data-gender]")];
 
 let selectedView = "general";
+let selectedGender = "all";
+let selectedCategory = "all";
 let rankingData = createEmptyRankingData();
 
 initializeRankingPage();
@@ -26,13 +30,27 @@ function initializeRankingPage() {
   viewButtons.forEach((button) => {
     button.addEventListener("click", () => {
       selectedView = button.dataset.view || "general";
-      updateViewButtons();
-      updateCategoryFilterState();
+      updateToggleButtons(viewButtons, selectedView, "data-view");
       renderRanking();
     });
   });
 
-  categoryFilterElement.addEventListener("change", () => {
+  genderButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedGender = button.dataset.gender || "all";
+      updateToggleButtons(genderButtons, selectedGender, "data-gender");
+      renderRanking();
+    });
+  });
+
+  categoryButtonsContainer.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-category]");
+    if (!button) {
+      return;
+    }
+
+    selectedCategory = button.dataset.category || "all";
+    updateCategoryButtons();
     renderRanking();
   });
 
@@ -40,8 +58,9 @@ function initializeRankingPage() {
     renderRanking();
   });
 
-  updateViewButtons();
-  updateCategoryFilterState();
+  updateToggleButtons(viewButtons, selectedView, "data-view");
+  updateToggleButtons(genderButtons, selectedGender, "data-gender");
+  updateCategoryButtons();
   loadRankingFromSheet();
 }
 
@@ -49,7 +68,7 @@ async function loadRankingFromSheet() {
   if (!RANKING_SHEET_URL) {
     setSheetStatus("Cole o link da planilha");
     renderSummary(rankingData.stats);
-    renderNoDataState("Conecte a planilha em ranking.js para visualizar o ranking do circuito.");
+    renderEmptyState("Conecte a planilha em ranking.js para visualizar o ranking do circuito.");
     renderLeaderCards([], []);
     return;
   }
@@ -65,16 +84,16 @@ async function loadRankingFromSheet() {
 
     const csvContent = await response.text();
     rankingData = parseRankingCsv(csvContent);
-    populateCategoryFilter(rankingData.categories);
+    renderCategoryButtons(rankingData.categories);
     renderSummary(rankingData.stats);
     renderRanking();
     setSheetStatus("Planilha conectada");
   } catch (error) {
     console.error("Erro ao carregar ranking do circuito:", error);
     rankingData = createEmptyRankingData();
-    populateCategoryFilter([]);
+    renderCategoryButtons([]);
     renderSummary(rankingData.stats);
-    renderNoDataState(
+    renderEmptyState(
       "Nao foi possivel carregar a planilha. Verifique o link em ranking.js e confirme se a base esta acessivel."
     );
     renderLeaderCards([], []);
@@ -275,24 +294,25 @@ function buildCategoryRanking(rows) {
 }
 
 function renderRanking() {
-  const filteredGeneralEntries = filterEntries(rankingData.generalEntries, {
-    searchTerm: searchInputElement.value
-  });
-  const filteredCategoryEntries = filterEntries(rankingData.categoryEntries, {
-    searchTerm: searchInputElement.value,
-    category: selectedView === "category" ? categoryFilterElement.value : "all"
-  });
-  const entriesToRender = selectedView === "general" ? filteredGeneralEntries : filteredCategoryEntries;
+  const filteredGeneralEntries = filterEntries(rankingData.generalEntries);
+  const filteredCategoryEntries = filterEntries(rankingData.categoryEntries);
+  const currentEntries = selectedView === "general" ? filteredGeneralEntries : filteredCategoryEntries;
+  const alternateEntries = selectedView === "general" ? filteredCategoryEntries : filteredGeneralEntries;
 
-  renderLeaderCards(filteredGeneralEntries, filteredCategoryEntries);
-  renderTable(entriesToRender);
+  renderLeaderCards(currentEntries, alternateEntries);
+  renderTable(currentEntries);
+  renderCards(currentEntries);
   renderTableHeading();
-  renderActiveChips(entriesToRender.length);
+  renderActiveChips(currentEntries.length);
 }
 
 function renderTable(entries) {
   if (!entries.length) {
-    renderNoDataState("Nenhum atleta encontrado para o filtro atual.");
+    tableBodyElement.innerHTML = `
+      <tr>
+        <td colspan="6">Nenhum atleta encontrado para o filtro atual.</td>
+      </tr>
+    `;
     return;
   }
 
@@ -300,10 +320,8 @@ function renderTable(entries) {
     .map((entry, index) => `
       <tr>
         <td><span class="ranking-position">${index + 1}</span></td>
-        <td>
-          ${escapeHtml(entry.athlete)}
-          <div class="ranking-subtext">${escapeHtml(entry.sex || "Sem sexo informado")}</div>
-        </td>
+        <td>${escapeHtml(entry.athlete)}</td>
+        <td>${escapeHtml(formatGenderLabel(entry.sex))}</td>
         <td>${escapeHtml(entry.category || "-")}</td>
         <td>${entry.scoredStages}</td>
         <td class="ranking-points">${formatPoints(entry.totalPoints)}</td>
@@ -312,27 +330,66 @@ function renderTable(entries) {
     .join("");
 }
 
-function renderNoDataState(message) {
+function renderCards(entries) {
+  if (!entries.length) {
+    cardListElement.innerHTML = `
+      <article class="ranking-athlete-card">
+        <p class="ranking-card-empty">Nenhum atleta encontrado para o filtro atual.</p>
+      </article>
+    `;
+    return;
+  }
+
+  cardListElement.innerHTML = entries
+    .map((entry, index) => `
+      <article class="ranking-athlete-card">
+        <div class="ranking-athlete-card-top">
+          <span class="ranking-position">${index + 1}</span>
+          <div class="ranking-athlete-main">
+            <p class="ranking-athlete-name">${escapeHtml(entry.athlete)}</p>
+            <p class="ranking-athlete-meta">${escapeHtml(formatGenderLabel(entry.sex))} - ${escapeHtml(entry.category || "Sem categoria")}</p>
+          </div>
+          <div class="ranking-athlete-total">
+            <span class="ranking-athlete-total-label">Total</span>
+            <strong>${formatPoints(entry.totalPoints)}</strong>
+          </div>
+        </div>
+        <div class="ranking-athlete-card-bottom">
+          <span class="ranking-chip">${entry.scoredStages} etapa${entry.scoredStages === 1 ? "" : "s"}</span>
+          <span class="ranking-chip ranking-chip-strong">${selectedView === "general" ? "Geral" : "Categoria"}</span>
+        </div>
+      </article>
+    `)
+    .join("");
+}
+
+function renderEmptyState(message) {
   tableBodyElement.innerHTML = `
     <tr>
-      <td colspan="5">${escapeHtml(message)}</td>
+      <td colspan="6">${escapeHtml(message)}</td>
     </tr>
+  `;
+
+  cardListElement.innerHTML = `
+    <article class="ranking-athlete-card">
+      <p class="ranking-card-empty">${escapeHtml(message)}</p>
+    </article>
   `;
 }
 
-function renderLeaderCards(generalEntries, categoryEntries) {
-  const generalLeader = generalEntries[0];
-  const categoryLeader = categoryEntries[0];
+function renderLeaderCards(currentEntries, alternateEntries) {
+  const currentLeader = currentEntries[0];
+  const alternateLeader = alternateEntries[0];
 
-  generalLeaderNameElement.textContent = generalLeader ? generalLeader.athlete : "Sem dados";
-  generalLeaderSupportElement.textContent = generalLeader
-    ? `${generalLeader.totalPoints} pontos no geral em ${generalLeader.scoredStages} etapa${generalLeader.scoredStages === 1 ? "" : "s"}.`
-    : "Assim que a planilha for carregada, esta area mostra quem lidera o ranking geral.";
+  currentLeaderNameElement.textContent = currentLeader ? currentLeader.athlete : "Sem dados";
+  currentLeaderSupportElement.textContent = currentLeader
+    ? `${currentLeader.totalPoints} pontos em ${currentLeader.scoredStages} etapa${currentLeader.scoredStages === 1 ? "" : "s"} na visao atual.`
+    : "Assim que a planilha for carregada, esta area mostra quem lidera o ranking atual.";
 
-  categoryLeaderNameElement.textContent = categoryLeader ? categoryLeader.athlete : "Sem dados";
-  categoryLeaderSupportElement.textContent = categoryLeader
-    ? `${categoryLeader.totalPoints} pontos na categoria ${categoryLeader.category || "-"} em ${categoryLeader.scoredStages} etapa${categoryLeader.scoredStages === 1 ? "" : "s"}.`
-    : "Aqui aparece o melhor nome da visao de categoria de acordo com o filtro atual.";
+  alternateLeaderNameElement.textContent = alternateLeader ? alternateLeader.athlete : "Sem dados";
+  alternateLeaderSupportElement.textContent = alternateLeader
+    ? `${alternateLeader.totalPoints} pontos na visao ${selectedView === "general" ? "categoria" : "geral"}.`
+    : "Aqui aparece o melhor nome da outra visao para facilitar a comparacao.";
 }
 
 function renderSummary({ athleteCount, stageCount, categoryCount }) {
@@ -341,13 +398,21 @@ function renderSummary({ athleteCount, stageCount, categoryCount }) {
   categoriesCountElement.textContent = String(categoryCount);
 }
 
-function populateCategoryFilter(categories) {
-  const currentValue = categoryFilterElement.value || "all";
-  categoryFilterElement.innerHTML = [
-    `<option value="all">Todas as categorias</option>`,
-    ...categories.map((category) => `<option value="${escapeHtmlAttribute(category)}">${escapeHtml(category)}</option>`)
-  ].join("");
-  categoryFilterElement.value = categories.includes(currentValue) ? currentValue : "all";
+function renderCategoryButtons(categories) {
+  const availableCategories = ["all", ...categories];
+
+  if (!availableCategories.includes(selectedCategory)) {
+    selectedCategory = "all";
+  }
+
+  categoryButtonsContainer.innerHTML = availableCategories
+    .map((category) => {
+      const label = category === "all" ? "Todas as categorias" : category;
+      const activeClass = selectedCategory === category ? " toggle-button-active" : "";
+
+      return `<button type="button" class="toggle-button ranking-category-button${activeClass}" data-category="${escapeHtmlAttribute(category)}">${escapeHtml(label)}</button>`;
+    })
+    .join("");
 }
 
 function renderTableHeading() {
@@ -355,41 +420,58 @@ function renderTableHeading() {
 }
 
 function renderActiveChips(entryCount) {
-  const filterLabel = selectedView === "general"
-    ? "Filtro atual: ranking geral"
-    : (
-      categoryFilterElement.value === "all"
-        ? "Filtro atual: todas as categorias"
-        : `Filtro atual: ${categoryFilterElement.value}`
-    );
+  const currentViewLabel = selectedView === "general" ? "Ranking Geral" : "Ranking Categoria";
+  const currentGenderLabel = selectedGender === "all" ? "Todos os generos" : formatGenderLabel(selectedGender);
+  const currentCategoryLabel = selectedCategory === "all" ? "Todas as categorias" : selectedCategory;
 
   chipRowElement.innerHTML = `
-    <span class="ranking-chip ranking-chip-strong">Fonte: planilha base do circuito</span>
-    <span class="ranking-chip">${escapeHtml(filterLabel)}</span>
-    <span class="ranking-chip">${entryCount} atleta${entryCount === 1 ? "" : "s"} exibido${entryCount === 1 ? "" : "s"}</span>
+    <span class="ranking-chip ranking-chip-strong">Fonte: planilha do ranking</span>
+    <span class="ranking-chip">${escapeHtml(currentViewLabel)}</span>
+    <span class="ranking-chip">${escapeHtml(currentGenderLabel)}</span>
+    <span class="ranking-chip">${escapeHtml(currentCategoryLabel)}</span>
+    <span class="ranking-chip">${entryCount} atleta${entryCount === 1 ? "" : "s"}</span>
   `;
 }
 
-function updateViewButtons() {
-  viewButtons.forEach((button) => {
-    const isActive = button.dataset.view === selectedView;
+function updateToggleButtons(buttons, selectedValue, attributeName) {
+  buttons.forEach((button) => {
+    const isActive = button.getAttribute(attributeName) === selectedValue;
     button.classList.toggle("toggle-button-active", isActive);
     button.setAttribute("aria-pressed", isActive ? "true" : "false");
   });
 }
 
-function updateCategoryFilterState() {
-  categoryFilterElement.disabled = selectedView !== "category";
+function updateCategoryButtons() {
+  [...categoryButtonsContainer.querySelectorAll("[data-category]")].forEach((button) => {
+    const isActive = button.dataset.category === selectedCategory;
+    button.classList.toggle("toggle-button-active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
 }
 
-function filterEntries(entries, { searchTerm = "", category = "all" } = {}) {
-  const normalizedSearch = String(searchTerm || "").trim().toLowerCase();
+function filterEntries(entries) {
+  const normalizedSearch = String(searchInputElement.value || "").trim().toLowerCase();
 
   return entries.filter((entry) => {
     const matchesSearch = !normalizedSearch || entry.athlete.toLowerCase().includes(normalizedSearch);
-    const matchesCategory = category === "all" || entry.category === category;
-    return matchesSearch && matchesCategory;
+    const matchesGender = selectedGender === "all" || normalizeHeader(entry.sex) === normalizeHeader(selectedGender);
+    const matchesCategory = selectedCategory === "all" || entry.category === selectedCategory;
+    return matchesSearch && matchesGender && matchesCategory;
   });
+}
+
+function formatGenderLabel(value) {
+  const normalizedValue = normalizeHeader(value);
+
+  if (normalizedValue === "fem") {
+    return "Feminino";
+  }
+
+  if (normalizedValue === "mas") {
+    return "Masculino";
+  }
+
+  return value || "Sem genero";
 }
 
 function setSheetStatus(text) {

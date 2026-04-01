@@ -31,7 +31,7 @@
       <p class="eyebrow">Area 3</p>
       <h1>Ranking Circuito Riograndino VC</h1>
       <p class="hero-text">
-        Consulte o ranking geral e por categoria com base na planilha oficial do circuito.
+        Consulte o ranking geral e por categoria com uma leitura rapida, limpa e adaptada para celular.
       </p>
       <div class="ranking-note">
         <span class="highlight-label">REGRA DO CIRCUITO</span>
@@ -43,7 +43,7 @@
       <article class="panel stat-card">
         <p class="stat-label">Atletas mapeados</p>
         <p id="ranking-athletes-count" class="stat-value">0</p>
-        <p class="stat-support">Quantidade unica de atletas lida da planilha base.</p>
+        <p class="stat-support">Quantidade unica de atletas lida da planilha do ranking.</p>
       </article>
 
       <article class="panel stat-card">
@@ -62,57 +62,66 @@
     <section class="panel ranking-controls-panel">
       <div class="overview-header">
         <div>
-          <p class="eyebrow">Filtro de leitura</p>
-          <h2>Escolha a visao do ranking</h2>
+          <p class="eyebrow">Filtros</p>
+          <h2>Escolha como quer visualizar o ranking</h2>
         </div>
         <span id="ranking-sheet-status" class="count-badge">Aguardando planilha</span>
       </div>
 
-      <div class="ranking-controls-grid">
-        <label class="field">
-          <span>Modo de visualizacao</span>
+      <div class="ranking-filters-stack">
+        <div class="ranking-filter-block">
+          <p class="ranking-filter-label">Tipo de ranking</p>
           <div class="ranking-view-toggle" role="tablist" aria-label="Tipos de ranking">
-            <button type="button" class="toggle-button toggle-button-active" data-view="general">Ranking Geral</button>
-            <button type="button" class="toggle-button" data-view="category">Ranking Categoria</button>
+            <button type="button" class="toggle-button toggle-button-active" data-view="general">Geral</button>
+            <button type="button" class="toggle-button" data-view="category">Categoria</button>
           </div>
-        </label>
+        </div>
 
-        <label class="field">
-          <span>Categoria</span>
-          <select id="ranking-category-filter">
-            <option value="all">Todas as categorias</option>
-          </select>
-        </label>
+        <div class="ranking-filter-block">
+          <p class="ranking-filter-label">Genero</p>
+          <div class="ranking-view-toggle" role="tablist" aria-label="Filtro por genero">
+            <button type="button" class="toggle-button toggle-button-active" data-gender="all">Todos</button>
+            <button type="button" class="toggle-button" data-gender="FEM">Feminino</button>
+            <button type="button" class="toggle-button" data-gender="MAS">Masculino</button>
+          </div>
+        </div>
 
-        <label class="field search-field">
+        <label class="field ranking-search-field">
           <span>Buscar atleta</span>
           <input id="ranking-search" type="text" placeholder="Digite um nome para filtrar">
         </label>
+
+        <div class="ranking-filter-block">
+          <p class="ranking-filter-label">Categoria</p>
+          <div id="ranking-category-buttons" class="ranking-category-chips">
+            <button type="button" class="toggle-button toggle-button-active" data-category="all">Todas as categorias</button>
+          </div>
+        </div>
       </div>
     </section>
 
     <section class="panel ranking-leaders-panel">
       <div class="overview-header">
         <div>
-          <p class="eyebrow">Panorama rapido</p>
+          <p class="eyebrow">Destaques</p>
           <h2>Liderancas atuais</h2>
         </div>
       </div>
 
-      <div class="ranking-leaders-grid">
-        <article class="panel ranking-leader-card">
-          <p class="ranking-leader-label">Lider geral</p>
-          <p id="ranking-general-leader-name" class="ranking-leader-name">Aguardando dados</p>
-          <p id="ranking-general-leader-support" class="ranking-leader-support">
-            Assim que a planilha for carregada, esta area mostra quem lidera o ranking geral.
+      <div class="ranking-podium-grid">
+        <article class="panel ranking-podium-card ranking-podium-card-primary">
+          <p class="ranking-podium-label">Lider do filtro atual</p>
+          <p id="ranking-general-leader-name" class="ranking-podium-name">Aguardando dados</p>
+          <p id="ranking-general-leader-support" class="ranking-podium-support">
+            Assim que a planilha for carregada, esta area mostra quem lidera o ranking atual.
           </p>
         </article>
 
-        <article class="panel ranking-leader-card">
-          <p class="ranking-leader-label">Lider da categoria</p>
-          <p id="ranking-category-leader-name" class="ranking-leader-name">Aguardando dados</p>
-          <p id="ranking-category-leader-support" class="ranking-leader-support">
-            Aqui aparece o melhor nome da visao de categoria de acordo com o filtro atual.
+        <article class="panel ranking-podium-card">
+          <p class="ranking-podium-label">Melhor nome da outra visao</p>
+          <p id="ranking-category-leader-name" class="ranking-podium-name">Aguardando dados</p>
+          <p id="ranking-category-leader-support" class="ranking-podium-support">
+            Aqui aparece o melhor nome da outra visao para facilitar a comparacao.
           </p>
         </article>
       </div>
@@ -127,27 +136,34 @@
       </div>
 
       <div id="ranking-chip-row" class="ranking-chip-row">
-        <span class="ranking-chip ranking-chip-strong">Fonte: planilha base do circuito</span>
+        <span class="ranking-chip ranking-chip-strong">Fonte: planilha do ranking</span>
         <span class="ranking-chip">Filtro atual: ranking geral</span>
       </div>
 
-      <div class="table-wrapper">
+      <div class="table-wrapper ranking-table-wrapper">
         <table>
           <thead>
             <tr>
               <th>Pos.</th>
               <th>Nome</th>
+              <th>Genero</th>
               <th>Categoria</th>
-              <th>Etapas pontuadas</th>
+              <th>Etapas</th>
               <th>Total</th>
             </tr>
           </thead>
           <tbody id="ranking-table-body">
             <tr>
-              <td colspan="5">Conecte a planilha para visualizar o ranking.</td>
+              <td colspan="6">Conecte a planilha para visualizar o ranking.</td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div id="ranking-card-list" class="ranking-card-list">
+        <article class="ranking-athlete-card">
+          <p class="ranking-card-empty">Conecte a planilha para visualizar o ranking.</p>
+        </article>
       </div>
     </section>
   </main>
