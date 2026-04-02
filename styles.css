@@ -141,6 +141,37 @@ body {
   background: linear-gradient(135deg, rgba(255, 106, 0, 0.2), rgba(255, 255, 255, 0.05));
 }
 
+.feature-card-store {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(255, 188, 92, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(255, 205, 120, 0.3), transparent 32%),
+    linear-gradient(135deg, rgba(255, 146, 61, 0.26), rgba(255, 255, 255, 0.06));
+}
+
+.feature-card-store::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.08) 45%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.45s ease;
+}
+
+.feature-card-store:hover::before {
+  transform: translateX(100%);
+}
+
+.feature-card-store .feature-tag {
+  background: rgba(255, 243, 220, 0.18);
+  color: #fff2da;
+}
+
+.feature-card-store .feature-link {
+  color: #fff7ed;
+}
+
 .feature-card h2,
 .highlight-card h2 {
   margin-bottom: 10px;
