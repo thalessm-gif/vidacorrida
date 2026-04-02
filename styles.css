@@ -188,6 +188,7 @@ body {
 }
 
 .plan-card {
+  position: relative;
   display: grid;
   gap: 10px;
   align-content: space-between;
@@ -195,16 +196,33 @@ body {
   padding: 18px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.05);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
   color: var(--text);
   text-decoration: none;
   transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
+.plan-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(4, 18, 38, 0.28) 0%, rgba(4, 18, 38, 0.8) 100%),
+    linear-gradient(120deg, rgba(255, 106, 0, 0.12), rgba(6, 23, 51, 0.12));
+}
+
 .plan-card:hover {
   transform: translateY(-2px);
   border-color: rgba(67, 201, 168, 0.45);
-  background: rgba(67, 201, 168, 0.1);
+}
+
+.plan-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .plan-card strong {
@@ -231,6 +249,18 @@ body {
 
 .plan-help a:hover {
   text-decoration: underline;
+}
+
+.plan-card-running {
+  background-image: url("assets/plan-corrida.jpeg");
+}
+
+.plan-card-functional {
+  background-image: url("assets/plan-corrida-funcional.jpeg");
+}
+
+.plan-card-nutri {
+  background-image: url("assets/plan-corrida-nutri.jpeg");
 }
 
 .feature-card h2,
