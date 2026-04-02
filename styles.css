@@ -172,6 +172,67 @@ body {
   color: #fff7ed;
 }
 
+.feature-card-plans {
+  grid-column: 1 / -1;
+  border-color: rgba(145, 214, 196, 0.22);
+  background:
+    radial-gradient(circle at top left, rgba(67, 201, 168, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(10, 63, 83, 0.46), rgba(255, 255, 255, 0.05));
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.plan-card {
+  display: grid;
+  gap: 10px;
+  align-content: space-between;
+  min-height: 132px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(67, 201, 168, 0.45);
+  background: rgba(67, 201, 168, 0.1);
+}
+
+.plan-card strong {
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+
+.plan-card span {
+  color: #c9fff1;
+  font-weight: 700;
+}
+
+.plan-help {
+  margin: 18px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.plan-help a {
+  color: #d9fff6;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.plan-help a:hover {
+  text-decoration: underline;
+}
+
 .feature-card h2,
 .highlight-card h2 {
   margin-bottom: 10px;
@@ -911,7 +972,8 @@ tbody tr:hover {
   .hero,
   .distance-groups,
   .home-actions,
-  .highlights-stat-grid {
+  .highlights-stat-grid,
+  .plan-grid {
     grid-template-columns: 1fr;
   }
 
