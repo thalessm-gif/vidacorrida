@@ -8,11 +8,13 @@ const tableBodyElement = document.getElementById("ranking-table-body");
 const cardListElement = document.getElementById("ranking-card-list");
 const tableHeadingElement = document.getElementById("ranking-table-heading");
 const categoryButtonsContainer = document.getElementById("ranking-category-buttons");
+const distanceButtonsContainer = document.getElementById("ranking-distance-buttons");
 const viewButtons = [...document.querySelectorAll("[data-view]")];
 const genderButtons = [...document.querySelectorAll("[data-gender]")];
 
 let selectedView = "general";
 let selectedGender = "all";
+let selectedDistance = "all";
 let selectedCategory = "all";
 let rankingData = createEmptyRankingData();
 let expandedEntryIds = new Set();
@@ -47,6 +49,17 @@ function initializeRankingPage() {
     renderRanking();
   });
 
+  distanceButtonsContainer.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-distance]");
+    if (!button) {
+      return;
+    }
+
+    selectedDistance = button.dataset.distance || "all";
+    updateDistanceButtons();
+    renderRanking();
+  });
+
   tableBodyElement.addEventListener("click", (event) => {
     const button = event.target.closest("[data-entry-toggle]");
     if (!button) {
@@ -72,6 +85,7 @@ function initializeRankingPage() {
   updateToggleButtons(viewButtons, selectedView, "data-view");
   updateToggleButtons(genderButtons, selectedGender, "data-gender");
   updateCategoryButtons();
+  updateDistanceButtons();
   loadRankingFromSheet();
 }
 
@@ -93,12 +107,14 @@ async function loadRankingFromSheet() {
 
     const csvContent = await response.text();
     rankingData = parseRankingCsv(csvContent);
+    renderDistanceButtons(rankingData.distances);
     renderCategoryButtons(rankingData.categories);
     renderRanking();
     setSheetStatus("Planilha conectada");
   } catch (error) {
     console.error("Erro ao carregar ranking do circuito:", error);
     rankingData = createEmptyRankingData();
+    renderDistanceButtons([]);
     renderCategoryButtons([]);
     renderEmptyState(
       "Nao foi possivel carregar a planilha. Verifique o link em ranking.js e confirme se a base esta acessivel."
@@ -122,6 +138,7 @@ function parseRankingCsv(csvContent) {
   const athleteColumn = findHeader(headers, ["atleta", "nome", "corredor", "competidor"]);
   const categoryColumn = findHeader(headers, ["faixa etaria", "faixa_etaria", "categoria", "faixa"]);
   const sexColumn = findHeader(headers, ["sexo", "genero"]);
+  const distanceColumn = findHeader(headers, ["distancia", "distância"]);
   const stageNumberColumn = findHeader(headers, ["etapa"]);
   const stageNameColumn = findHeader(headers, ["prova"]);
   const dateColumn = findHeader(headers, ["data"]);
@@ -138,6 +155,7 @@ function parseRankingCsv(csvContent) {
       athlete: getCellValue(row, athleteColumn.index),
       category: getCellValue(row, categoryColumn ? categoryColumn.index : -1),
       sex: getCellValue(row, sexColumn ? sexColumn.index : -1),
+      distance: normalizeDistance(getCellValue(row, distanceColumn ? distanceColumn.index : -1)),
       stageNumber: getCellValue(row, stageNumberColumn ? stageNumberColumn.index : -1),
       stageName: getCellValue(row, stageNameColumn ? stageNameColumn.index : -1),
       date: getCellValue(row, dateColumn ? dateColumn.index : -1),
@@ -149,11 +167,15 @@ function parseRankingCsv(csvContent) {
   const categories = [...new Set(stageRows.map((entry) => entry.category).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b, "pt-BR", { sensitivity: "base" })
   );
+  const distances = [...new Set(stageRows.map((entry) => entry.distance).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, "pt-BR", { sensitivity: "base" })
+  );
 
   return {
     generalEntries: buildRankingEntries(stageRows, "general"),
     categoryEntries: buildRankingEntries(stageRows, "category"),
-    categories
+    categories,
+    distances
   };
 }
 
@@ -165,9 +187,10 @@ function buildRankingEntries(stageRows, mode) {
       return;
     }
 
-    const key = mode === "category"
+    const keyBase = mode === "category"
       ? `${row.athlete.toLowerCase()}|${row.category.toLowerCase()}`
       : row.athlete.toLowerCase();
+    const key = `${keyBase}|${row.distance.toLowerCase()}`;
 
     if (!rankingMap.has(key)) {
       rankingMap.set(key, {
@@ -175,6 +198,7 @@ function buildRankingEntries(stageRows, mode) {
         athlete: row.athlete,
         category: row.category,
         sex: row.sex,
+        distance: row.distance,
         totalGeneral: 0,
         totalCategory: 0,
         stageDetails: []
@@ -184,6 +208,7 @@ function buildRankingEntries(stageRows, mode) {
     const entry = rankingMap.get(key);
     entry.category = entry.category || row.category;
     entry.sex = entry.sex || row.sex;
+    entry.distance = entry.distance || row.distance;
     entry.totalGeneral += row.generalPoints;
     entry.totalCategory += row.categoryPoints;
     entry.stageDetails.push({
@@ -201,6 +226,7 @@ function buildRankingEntries(stageRows, mode) {
       athlete: entry.athlete,
       category: entry.category,
       sex: entry.sex,
+      distance: entry.distance,
       totalGeneral: entry.totalGeneral,
       totalCategory: entry.totalCategory,
       total: mode === "general" ? entry.totalGeneral : entry.totalCategory,
@@ -232,7 +258,7 @@ function renderTable(entries) {
   if (!entries.length) {
     tableBodyElement.innerHTML = `
       <tr>
-        <td colspan="6">Nenhum atleta encontrado para o filtro atual.</td>
+        <td colspan="7">Nenhum atleta encontrado para o filtro atual.</td>
       </tr>
     `;
     return;
@@ -247,6 +273,7 @@ function renderTable(entries) {
           <td><span class="ranking-position">${index + 1}</span></td>
           <td>${escapeHtml(entry.athlete)}</td>
           <td>${escapeHtml(formatGenderLabel(entry.sex))}</td>
+          <td>${escapeHtml(entry.distance || "-")}</td>
           <td>${escapeHtml(entry.category || "-")}</td>
           <td class="ranking-points">${formatPoints(entry.total)}</td>
           <td>
@@ -279,7 +306,7 @@ function renderDetailRow(entry) {
 
   return `
     <tr class="ranking-detail-row">
-      <td colspan="6">
+      <td colspan="7">
         <div class="ranking-detail-panel">
           ${detailsHtml}
         </div>
@@ -328,7 +355,7 @@ function renderCards(entries) {
             <span class="ranking-position">${index + 1}</span>
             <div class="ranking-athlete-main">
               <p class="ranking-athlete-name">${escapeHtml(entry.athlete)}</p>
-              <p class="ranking-athlete-meta">${escapeHtml(formatGenderLabel(entry.sex))} - ${escapeHtml(entry.category || "Sem categoria")}</p>
+              <p class="ranking-athlete-meta">${escapeHtml(formatGenderLabel(entry.sex))} - ${escapeHtml(entry.distance || "-")} - ${escapeHtml(entry.category || "Sem categoria")}</p>
             </div>
             <div class="ranking-athlete-total">
               <span class="ranking-athlete-total-label">Total</span>
@@ -350,7 +377,7 @@ function renderCards(entries) {
 function renderEmptyState(message) {
   tableBodyElement.innerHTML = `
     <tr>
-      <td colspan="6">${escapeHtml(message)}</td>
+      <td colspan="7">${escapeHtml(message)}</td>
     </tr>
   `;
 
@@ -374,6 +401,23 @@ function renderCategoryButtons(categories) {
       const activeClass = selectedCategory === category ? " toggle-button-active" : "";
 
       return `<button type="button" class="toggle-button ranking-category-button${activeClass}" data-category="${escapeHtmlAttribute(category)}">${escapeHtml(label)}</button>`;
+    })
+    .join("");
+}
+
+function renderDistanceButtons(distances) {
+  const availableDistances = ["all", ...distances];
+
+  if (!availableDistances.includes(selectedDistance)) {
+    selectedDistance = "all";
+  }
+
+  distanceButtonsContainer.innerHTML = availableDistances
+    .map((distance) => {
+      const label = distance === "all" ? "Todas as distancias" : distance;
+      const activeClass = selectedDistance === distance ? " toggle-button-active" : "";
+
+      return `<button type="button" class="toggle-button ranking-category-button${activeClass}" data-distance="${escapeHtmlAttribute(distance)}">${escapeHtml(label)}</button>`;
     })
     .join("");
 }
@@ -412,15 +456,34 @@ function updateCategoryButtons() {
   });
 }
 
+function updateDistanceButtons() {
+  [...distanceButtonsContainer.querySelectorAll("[data-distance]")].forEach((button) => {
+    const isActive = button.dataset.distance === selectedDistance;
+    button.classList.toggle("toggle-button-active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+}
+
 function filterEntries(entries) {
   const normalizedSearch = String(searchInputElement.value || "").trim().toLowerCase();
 
   return entries.filter((entry) => {
     const matchesSearch = !normalizedSearch || entry.athlete.toLowerCase().includes(normalizedSearch);
     const matchesGender = selectedGender === "all" || normalizeHeader(entry.sex) === normalizeHeader(selectedGender);
+    const matchesDistance = selectedDistance === "all" || entry.distance === selectedDistance;
     const matchesCategory = selectedCategory === "all" || entry.category === selectedCategory;
-    return matchesSearch && matchesGender && matchesCategory;
+    return matchesSearch && matchesGender && matchesDistance && matchesCategory;
   });
+}
+
+function normalizeDistance(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "")
+    .replace(/^3KM$/, "03KM")
+    .replace(/^5KM$/, "05KM")
+    .replace(/^10KM$/, "10KM");
 }
 
 function formatGenderLabel(value) {
@@ -508,7 +571,8 @@ function createEmptyRankingData() {
   return {
     generalEntries: [],
     categoryEntries: [],
-    categories: []
+    categories: [],
+    distances: []
   };
 }
 

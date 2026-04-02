@@ -527,6 +527,7 @@ button:disabled {
 }
 
 .ranking-controls-panel {
+  padding: 24px;
   margin-bottom: 24px;
 }
 
@@ -899,6 +900,8 @@ tbody tr:hover {
   .form-panel,
   .overview,
   .table-panel,
+  .ranking-controls-panel,
+  .ranking-hero,
   .home-hero,
   .highlights-hero {
     padding: 18px;
@@ -916,6 +919,24 @@ tbody tr:hover {
 
   .ranking-card-list {
     display: grid;
+  }
+
+  .ranking-athlete-card-top {
+    grid-template-columns: auto 1fr;
+  }
+
+  .ranking-athlete-total {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
+  .ranking-stage-detail-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ranking-stage-detail-points {
+    justify-content: flex-start;
   }
 
   .primary-button,

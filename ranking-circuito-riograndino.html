@@ -62,10 +62,12 @@
           </div>
         </div>
 
-        <label class="field ranking-search-field">
-          <span>Buscar atleta</span>
-          <input id="ranking-search" type="text" placeholder="Digite um nome para filtrar">
-        </label>
+        <div class="ranking-filter-block">
+          <p class="ranking-filter-label">Distancia</p>
+          <div id="ranking-distance-buttons" class="ranking-category-chips">
+            <button type="button" class="toggle-button toggle-button-active" data-distance="all">Todas as distancias</button>
+          </div>
+        </div>
 
         <div class="ranking-filter-block">
           <p class="ranking-filter-label">Categoria</p>
@@ -73,6 +75,11 @@
             <button type="button" class="toggle-button toggle-button-active" data-category="all">Todas as categorias</button>
           </div>
         </div>
+
+        <label class="field ranking-search-field">
+          <span>Buscar atleta</span>
+          <input id="ranking-search" type="text" placeholder="Digite um nome para filtrar">
+        </label>
       </div>
     </section>
 
@@ -91,6 +98,7 @@
               <th>Pos.</th>
               <th>Nome</th>
               <th>Genero</th>
+              <th>Distancia</th>
               <th>Categoria</th>
               <th>Total</th>
               <th>Detalhes</th>
@@ -98,7 +106,7 @@
           </thead>
           <tbody id="ranking-table-body">
             <tr>
-              <td colspan="6">Conecte a planilha para visualizar o ranking.</td>
+              <td colspan="7">Conecte a planilha para visualizar o ranking.</td>
             </tr>
           </tbody>
         </table>
