@@ -569,6 +569,10 @@ button:disabled {
   padding-inline: 14px;
 }
 
+.ranking-detail-button {
+  min-width: 132px;
+}
+
 .toggle-button {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 999px;
@@ -623,10 +627,52 @@ button:disabled {
   font-weight: 700;
 }
 
-.ranking-subtext {
-  margin-top: 4px;
+.ranking-detail-row td {
+  padding-top: 0;
+}
+
+.ranking-detail-panel,
+.ranking-card-details {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ranking-stage-detail-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ranking-stage-detail-item:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.ranking-stage-detail-title {
+  margin-bottom: 4px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.ranking-stage-detail-meta {
+  margin-bottom: 0;
   color: var(--muted);
-  font-size: 0.88rem;
+  font-size: 0.9rem;
+}
+
+.ranking-stage-detail-points {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .ranking-card-list {
